@@ -7,7 +7,8 @@ export default defineConfig({
     reactRefresh(),
     ViteRsw({
       crates: [
-        'wasm-test',
+        'wasm-gl',
+        'wasm-audio',
       ]
     }),
   ],
