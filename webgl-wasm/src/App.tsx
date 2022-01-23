@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import init, {}
 // import logo from './logo.svg'
 import './App.css'
 function App() {
@@ -14,12 +15,17 @@ function App() {
     setMute(!audio);
     
   }
+  const handleChangeVolume = () => {
+
+    setVomlume(volume);
+  } 
   return (
     <div className="App">
       <header className="App-header">
         <canvas className='canvas'/>
         <audio src="./audio.mp3" className='audio'/>
 
+        <input  type="range" min="0" max="1" step="0.01" value={volume}  onChange={handleChangeVolume}/>
         <button onClick={handleMute}>
           mute
         </button>

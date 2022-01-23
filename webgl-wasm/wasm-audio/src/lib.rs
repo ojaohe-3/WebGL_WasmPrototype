@@ -27,13 +27,15 @@ impl FmOsc {
     
     #[wasm_bindgen(constructor)]
     pub fn new(buff: Vec<f32>) -> Result<FmOsc, JsValue> {
-        const fftize: u32  = 2048;
+        const fftsize: u32  = 2048;
         let ctx = web_sys::AudioContext::new()?;
         let source = {
             let mut s = ctx.create_buffer_source()?;
+
             let options = AudioBufferOptions::new(buff.len() as u32, ctx.sample_rate());
             let abuff = AudioBuffer::new(&options)?;
-            abuff.copy_to_channel(&buff, 0)?;
+            abuff.copy_to_channel(&buff, 0)?; //is correct lamo?
+
             s.set_buffer(Some(&abuff));
             s.set_loop(true);
             s
@@ -41,7 +43,7 @@ impl FmOsc {
         // set the analyser
         let analyser = {
             let mut a = ctx.create_analyser()?;
-            a.set_fft_size(fftize);
+            a.set_fft_size(fftsize);
             a
         };
         // Create our web audio objects.
@@ -70,6 +72,10 @@ impl FmOsc {
         self.gain.gain().set_value(gain);
     }
 
+    #[wasm_bindgen]
+    pub fn get_fs(&self){
+        
+    }
     
 }
 
