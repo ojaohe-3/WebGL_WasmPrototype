@@ -36,6 +36,17 @@
     transform: rotate(360deg);
   }
 }
+.mute_icon{
+  left: 1%;
+  top: 1%;
+  position: absolute;
+}
+.canvas-container{
+  padding-top: 2vh;
+  padding-left: 2vw;
+  width: 95vw;
+  height: 88vh;
+}
 
 button {
   font-size: calc(10px + 2vmin);

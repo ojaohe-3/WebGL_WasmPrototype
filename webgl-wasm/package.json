@@ -8,8 +8,10 @@
     "rsw:build": "rsw && npm run build"
   },
   "dependencies": {
+    "@types/react-icons": "^3.0.0",
     "react": "^17.0.0",
-    "react-dom": "^17.0.0"
+    "react-dom": "^17.0.0",
+    "react-icons": "^4.3.1"
   },
   "devDependencies": {
     "@types/react": "^17.0.0",

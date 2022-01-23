@@ -5,7 +5,7 @@ use web_sys::*;
 
  
 #[wasm_bindgen]
-pub struct FmOsc {
+pub struct FmAn {
     ctx: AudioContext,
     /// analyser
     analyser: AnalyserNode,
@@ -15,7 +15,7 @@ pub struct FmOsc {
 
 }
 
-impl Drop for FmOsc {
+impl Drop for FmAn {
     fn drop(&mut self) {
         let _ = self.ctx.close();
 
@@ -23,11 +23,11 @@ impl Drop for FmOsc {
 }
 
 #[wasm_bindgen]
-impl FmOsc {
+impl FmAn {
     
     #[wasm_bindgen(constructor)]
-    pub fn new(buff: Vec<f32>) -> Result<FmOsc, JsValue> {
-        const fftsize: u32  = 2048;
+    pub fn new(buff: Vec<f32>) -> Result<FmAn, JsValue> {
+        const FFTSIZE: u32  = 2048;
         let ctx = web_sys::AudioContext::new()?;
         let source = {
             let mut s = ctx.create_buffer_source()?;
@@ -43,7 +43,7 @@ impl FmOsc {
         // set the analyser
         let analyser = {
             let mut a = ctx.create_analyser()?;
-            a.set_fft_size(fftsize);
+            a.set_fft_size(FFTSIZE);
             a
         };
         // Create our web audio objects.
@@ -52,7 +52,7 @@ impl FmOsc {
         source.connect_with_audio_node(&analyser)?;
         gain.connect_with_audio_node(&ctx.destination())?;
         
-        Ok(FmOsc {
+        Ok(FmAn {
             ctx,
             analyser,
             source,
@@ -73,8 +73,17 @@ impl FmOsc {
     }
 
     #[wasm_bindgen]
-    pub fn get_fs(&self){
-        
+    pub fn get_freq_bytes(&self) -> Vec<u8>{
+        let mut data = Vec::with_capacity(self.analyser.frequency_bin_count() as usize);
+        self.analyser.get_byte_frequency_data(&mut data);
+        data.to_vec()
+    }
+
+    #[wasm_bindgen]
+    pub fn get_freq_data(&self) -> Vec<f32>{
+        let mut data = Vec::with_capacity(self.analyser.frequency_bin_count() as usize);
+        self.analyser.get_float_frequency_data(&mut data);
+        data.to_vec()
     }
     
 }

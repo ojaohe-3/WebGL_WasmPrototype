@@ -1,5 +1,6 @@
 {
   "crates": [
-    "wasm-test"
+    "wasm-gl",
+    "wasm-audio"
   ]
 }
