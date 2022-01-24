@@ -1,20 +1,26 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 // import FaVolumeUp from 'react-icons';
 // import FaVolumeMute from 'react-icons';
 import { FaVolumeUp, FaVolumeMute } from "react-icons/fa";
-import init, { FmAn } from "../wasm-audio/pkg";
 // import logo from './logo.svg'
 import "./App.css";
+import audioHookRefCallback from "./AudioHookRefCallback";
+import init, { FmAn } from "../wasm-audio/pkg";
+import { InitInput } from '../wasm-audio/pkg/wasm-audio';
+
+
+
 function App() {
   const [audio, setMute] = useState(true)
   const [volume, setVomlume] = useState(0.0)
-  const audioRef = useRef(null)
-  let a_ctx : FmAn;
+  // const [audioRef, data] = audioHookRefCallback();
+  const audioRef = useRef(null);
   useEffect(() => {
-    const data = audioRef.current as unknown as  HTMLAudioElement
-    console.log(data)
-    a_ctx = new FmAn()
-  }, []);
+    const loadModule = async () => {
+      await init();
+    };
+    loadModule();
+    }, []);
 
   // this will talk to the wasm front controlling the audio context
   function handleMute() {
@@ -24,10 +30,12 @@ function App() {
     setVomlume(+event.currentTarget.value)
 
   }
+
+  function handleData (e) { console.log(e)};
   return (
     <div className="App">
       <header className="App-header">
-        <audio src="./audio.mp3" className="audio" ref={audioRef}/>
+        <audio src="./audio.mp3" className="audio" ref={audioRef} onLoadedMetadata={handleData}/>
         <div className="canvas-container">
           <canvas className="canvas" />
         </div>

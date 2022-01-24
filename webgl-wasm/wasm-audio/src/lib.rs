@@ -52,6 +52,7 @@ impl FmAn {
         source.connect_with_audio_node(&analyser)?;
         gain.connect_with_audio_node(&ctx.destination())?;
         
+        source.start()?;
         Ok(FmAn {
             ctx,
             analyser,
