@@ -40,8 +40,8 @@ impl FmAn {
         gain.gain().set_value(0.0);
 
         source.connect_with_audio_node(&gain)?;
-        analyser.connect_with_audio_node(&gain)?;
-        gain.connect_with_audio_node(&ctx.destination())?;
+        gain.connect_with_audio_node(&analyser)?;
+        analyser.connect_with_audio_node(&ctx.destination())?;
 
         Ok(FmAn {
             ctx,

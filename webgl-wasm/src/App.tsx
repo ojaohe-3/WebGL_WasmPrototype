@@ -12,6 +12,9 @@ function App() {
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [analyzer, setAnalyzer] = useState<FmAn | null>(null);
   const [moduleLoaded, setModule] = useState<boolean>(false);
+  const canvas = useRef<HTMLCanvasElement | null>(null);
+  let dataArray: Uint8Array= new Uint8Array(2048);
+
   const onAudioLoaded = useCallback(
     (node) => {
       setAudio(node);
@@ -36,11 +39,42 @@ function App() {
   function handleMute() {
     setMute(!mute);
     audio!.muted = mute;
+    let d = new Uint8Array(analyzer!.get_bit_count());
+    analyzer?.get_freq_bytes(d);
+    console.log(d);
   }
   function handleChangeVolume(event: React.FormEvent<HTMLInputElement>) {
     const v: number = +event.currentTarget.value;
     setVomlume(v);
     analyzer?.set_gain(v);
+    
+  }
+  function draw() {
+    if (canvas.current) {
+      requestAnimationFrame(draw);
+
+      const canvasCtx = canvas.current!.getContext("2d")!;
+      const _canvas = canvas.current!;
+      const WIDTH = _canvas.width;
+      const HEIGHT = _canvas.height
+      analyzer?.get_freq_bytes(dataArray!);
+
+      canvasCtx.fillStyle = 'rgb(0, 0, 0)';
+      canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+      var barWidth = (WIDTH / 2048) * 2.5;
+      var barHeight;
+      var x = 0;
+      for(var i = 0; i < 2048; i++) {
+        barHeight = dataArray[i]/2;
+
+        canvasCtx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+        canvasCtx.fillRect(x,HEIGHT-barHeight/2,barWidth,barHeight);
+
+        x += barWidth + 1;
+      }
+
+
+    }
   }
 
   // function handleData (e: any) {
@@ -57,9 +91,7 @@ function App() {
           autoPlay
           controls
         />
-        <div className="canvas-container">
-          <canvas className="canvas" />
-        </div>
+        <canvas className="canvas" ref={canvas} />
         <div className="mute_icon">
           {mute ? <FaVolumeUp /> : <FaVolumeMute />}
         </div>
@@ -73,6 +105,7 @@ function App() {
           onChange={handleChangeVolume}
         />
         <button onClick={handleMute}>mute</button>
+        <button onClick={draw}>draw</button>
       </header>
     </div>
   );
