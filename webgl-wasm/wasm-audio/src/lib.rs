@@ -1,15 +1,13 @@
 use wasm_bindgen::prelude::*;
 use web_sys::*;
 
-
-
  
 #[wasm_bindgen]
 pub struct FmAn {
     ctx: AudioContext,
     /// analyser
     analyser: AnalyserNode,
-    source: AudioBufferSourceNode,
+    source: MediaElementAudioSourceNode,
     /// Overall gain (volume) control
     gain: GainNode,
 
@@ -26,20 +24,11 @@ impl Drop for FmAn {
 impl FmAn {
     
     #[wasm_bindgen(constructor)]
-    pub fn new(buff: Vec<f32>) -> Result<FmAn, JsValue> {
+    pub fn new(media: &HtmlMediaElement) -> Result<FmAn, JsValue> {
         const FFTSIZE: u32  = 2048;
         let ctx = web_sys::AudioContext::new()?;
-        let source = {
-            let mut s = ctx.create_buffer_source()?;
+        let source =  ctx.create_media_element_source(media)?;
 
-            let options = AudioBufferOptions::new(buff.len() as u32, ctx.sample_rate());
-            let abuff = AudioBuffer::new(&options)?;
-            abuff.copy_to_channel(&buff, 0)?; //is correct lamo?
-
-            s.set_buffer(Some(&abuff));
-            s.set_loop(true);
-            s
-        };
         // set the analyser
         let analyser = {
             let mut a = ctx.create_analyser()?;
@@ -48,11 +37,12 @@ impl FmAn {
         };
         // Create our web audio objects.
         let gain = ctx.create_gain()?;
-        
-        source.connect_with_audio_node(&analyser)?;
+        gain.gain().set_value(0.0);
+
+        source.connect_with_audio_node(&gain)?;
+        analyser.connect_with_audio_node(&gain)?;
         gain.connect_with_audio_node(&ctx.destination())?;
-        
-        source.start()?;
+
         Ok(FmAn {
             ctx,
             analyser,
@@ -74,18 +64,21 @@ impl FmAn {
     }
 
     #[wasm_bindgen]
-    pub fn get_freq_bytes(&self) -> Vec<u8>{
-        let mut data = Vec::with_capacity(self.analyser.frequency_bin_count() as usize);
-        self.analyser.get_byte_frequency_data(&mut data);
-        data.to_vec()
+    pub fn get_freq_bytes(&self, data: &mut [u8] ){
+        self.analyser.get_byte_frequency_data(data);
     }
 
     #[wasm_bindgen]
-    pub fn get_freq_data(&self) -> Vec<f32>{
-        let mut data = Vec::with_capacity(self.analyser.frequency_bin_count() as usize);
-        self.analyser.get_float_frequency_data(&mut data);
-        data.to_vec()
+    pub fn get_freq_data(&self,  data: &mut [f32]){
+        self.analyser.get_float_frequency_data(data);
     }
+
+
+    #[wasm_bindgen]
+    pub fn get_bit_count(&self) -> u32{
+        self.analyser.frequency_bin_count()
+    }
+
     
 }
 

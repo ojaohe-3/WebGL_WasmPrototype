@@ -1,46 +1,67 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-// import FaVolumeUp from 'react-icons';
-// import FaVolumeMute from 'react-icons';
+// import FaVolumeUp from 'react-icons'
+// import FaVolumeMute from 'react-icons'
 import { FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 // import logo from './logo.svg'
 import "./App.css";
-import audioHookRefCallback from "./AudioHookRefCallback";
 import init, { FmAn } from "../wasm-audio/pkg";
-import { InitInput } from '../wasm-audio/pkg/wasm-audio';
-
-
 
 function App() {
-  const [audio, setMute] = useState(true)
-  const [volume, setVomlume] = useState(0.0)
-  // const [audioRef, data] = audioHookRefCallback();
-  const audioRef = useRef(null);
+  const [mute, setMute] = useState(true);
+  const [volume, setVomlume] = useState(0.0);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [analyzer, setAnalyzer] = useState<FmAn | null>(null);
+  const [moduleLoaded, setModule] = useState<boolean>(false);
+  const onAudioLoaded = useCallback(
+    (node) => {
+      setAudio(node);
+      if (moduleLoaded) {
+        const a = new FmAn(audio!);
+        a.set_gain(volume);
+        setAnalyzer(a);
+      }
+    },
+    [moduleLoaded]
+  );
+
   useEffect(() => {
     const loadModule = async () => {
       await init();
+      setModule(true);
     };
     loadModule();
-    }, []);
+  }, []);
 
   // this will talk to the wasm front controlling the audio context
   function handleMute() {
-    setMute(!audio);
+    setMute(!mute);
+    audio!.muted = mute;
   }
   function handleChangeVolume(event: React.FormEvent<HTMLInputElement>) {
-    setVomlume(+event.currentTarget.value)
-
+    const v: number = +event.currentTarget.value;
+    setVomlume(v);
+    analyzer?.set_gain(v);
   }
 
-  function handleData (e) { console.log(e)};
+  // function handleData (e: any) {
+  //   console.log(e)
+  // }
   return (
     <div className="App">
       <header className="App-header">
-        <audio src="./audio.mp3" className="audio" ref={audioRef} onLoadedMetadata={handleData}/>
+        <audio
+          src="./audio.mp3"
+          className="audio"
+          ref={onAudioLoaded}
+          loop
+          autoPlay
+          controls
+        />
         <div className="canvas-container">
           <canvas className="canvas" />
         </div>
         <div className="mute_icon">
-          {audio ? <FaVolumeUp /> : <FaVolumeMute />}
+          {mute ? <FaVolumeUp /> : <FaVolumeMute />}
         </div>
 
         <input

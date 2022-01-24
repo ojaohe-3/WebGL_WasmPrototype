@@ -10,10 +10,13 @@ crate-type = ["cdylib"]
 
 [dependencies]
 wasm-bindgen = "0.2.78"
+wasm-bindgen-futures= "0.4.28"
+
 
 [dependencies.web-sys]
 web-sys = "0.3.55"
 features = [
+  'console',
   'AudioContext',
   'AudioDestinationNode',
   'AudioNode',
@@ -26,5 +29,7 @@ features = [
   'MediaStreamAudioSourceNode',
   'AudioBufferSourceNode',
   'AudioBuffer',
+  'HtmlAudioElement',
+  'HtmlMediaElement',
   'AudioBufferOptions'
 ]
