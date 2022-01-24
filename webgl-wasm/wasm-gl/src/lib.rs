@@ -3,10 +3,12 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGl2RenderingContext, WebGlProgram, WebGlShader};
 
-#[wasm_bindgen(start)]
-pub fn start() -> Result<(), JsValue> {
-    let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.get_element_by_id("canvas").unwrap();
+// pub struct WasmCTX{
+// }
+
+
+#[wasm_bindgen]
+pub fn start(canvas: web_sys::HtmlCanvasElement) -> Result<(), JsValue> {
     let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
 
     let context = canvas
@@ -14,32 +16,19 @@ pub fn start() -> Result<(), JsValue> {
         .unwrap()
         .dyn_into::<WebGl2RenderingContext>()?;
 
+    let vert_code = include_str!("./basic.vert");
+    let frag_code = include_str!("./basic.frag");
+
     let vert_shader = compile_shader(
         &context,
         WebGl2RenderingContext::VERTEX_SHADER,
-        r##"#version 300 es
- 
-        in vec4 position;
-
-        void main() {
-        
-            gl_Position = position;
-        }
-        "##,
+        vert_code,
     )?;
 
     let frag_shader = compile_shader(
         &context,
         WebGl2RenderingContext::FRAGMENT_SHADER,
-        r##"#version 300 es
-    
-        precision highp float;
-        out vec4 outColor;
-        
-        void main() {
-            outColor = vec4(1, 1, 1, 1);
-        }
-        "##,
+        frag_code,
     )?;
 
     let program = link_program(&context, &vert_shader, &frag_shader)?;
@@ -141,3 +130,4 @@ pub fn link_program(
             .unwrap_or_else(|| String::from("Unknown error creating program object")))
     }
 }
+
